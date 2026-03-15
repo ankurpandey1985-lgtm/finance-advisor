@@ -1,0 +1,700 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#app{display:flex;flex-direction:column;min-height:620px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;font-family:var(--font-sans)}
+.screen{display:none;flex-direction:column;flex:1}
+.screen.active{display:flex}
+.s-head{padding:14px 18px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);display:flex;align-items:center;gap:10px}
+.s-head h2{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1}
+.s-head .step-ind{font-size:11px;color:var(--color-text-secondary)}
+.s-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.s-foot{padding:12px 16px;border-top:0.5px solid var(--color-border-tertiary);display:flex;gap:8px;background:var(--color-background-primary)}
+.btn-primary{flex:1;padding:9px 16px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-text-primary);color:var(--color-background-primary);border:none}
+.btn-secondary{padding:9px 14px;font-size:13px;border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.profile-card{padding:12px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);cursor:pointer;text-align:center;background:var(--color-background-primary);transition:all 0.15s}
+.profile-card:hover{background:var(--color-background-secondary)}
+.profile-card.selected{border:2px solid var(--color-border-info);background:var(--color-background-info)}
+.profile-card .icon{font-size:22px;margin-bottom:6px}
+.profile-card .label{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.profile-card .sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.field-group{display:flex;flex-direction:column;gap:4px}
+.field-group label{font-size:12px;color:var(--color-text-secondary);font-weight:500}
+.field-group input,.field-group select,.field-group textarea{width:100%;padding:8px 10px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}
+.field-group textarea{resize:vertical;min-height:60px;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.section-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.alert{padding:9px 12px;border-radius:var(--border-radius-md);font-size:12px;line-height:1.5}
+.alert.info{background:var(--color-background-info);color:var(--color-text-info);border:0.5px solid var(--color-border-info)}
+.alert.warning{background:var(--color-background-warning);color:var(--color-text-warning)}
+.alert.success{background:var(--color-background-success);color:var(--color-text-success)}
+.alert.danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.cas-zone{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:20px;text-align:center;cursor:pointer}
+.cas-zone:hover{background:var(--color-background-secondary)}
+.cas-step{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cas-step:last-child{border-bottom:none}
+.cas-step .num{width:20px;height:20px;border-radius:50%;background:var(--color-background-info);color:var(--color-text-info);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.cas-step .txt{font-size:12px;color:var(--color-text-primary);line-height:1.5}
+.cas-step .txt span{color:var(--color-text-info)}
+.skip-link{font-size:12px;color:var(--color-text-secondary);text-align:center;cursor:pointer;text-decoration:underline;padding:4px 0}
+.skip-link:hover{color:var(--color-text-primary)}
+#tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);overflow-x:auto}
+.tab{padding:9px 13px;font-size:13px;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+#msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:9px 13px;border-radius:var(--border-radius-lg);font-size:13px;line-height:1.6}
+.msg.user{background:var(--color-background-info);color:var(--color-text-primary);align-self:flex-end;border-bottom-right-radius:3px}
+.msg.ai{background:var(--color-background-secondary);color:var(--color-text-primary);align-self:flex-start;border-bottom-left-radius:3px;border:0.5px solid var(--color-border-tertiary)}
+.msg .lbl{font-size:10px;color:var(--color-text-secondary);margin-bottom:3px;font-weight:500}
+.msg.loading{color:var(--color-text-secondary);font-style:italic}
+#inp-area{padding:10px 14px;border-top:0.5px solid var(--color-border-tertiary);display:flex;gap:8px;background:var(--color-background-primary)}
+#usr-inp{flex:1;padding:8px 11px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);resize:none;height:36px;font-family:var(--font-sans)}
+#send-btn{padding:8px 14px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-text-primary);color:var(--color-background-primary);border:none}
+#send-btn:disabled{opacity:0.4;cursor:not-allowed}
+#sidebar{width:180px;border-left:0.5px solid var(--color-border-tertiary);padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.qlbl{font-size:10px;color:var(--color-text-tertiary);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+.qbtn{padding:7px 8px;font-size:11px;border-radius:var(--border-radius-md);cursor:pointer;text-align:left;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-secondary);line-height:1.4}
+.qbtn:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.chat-wrap{display:flex;flex:1;overflow:hidden}
+.prow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.prow:last-child{border-bottom:none}
+.prow .k{color:var(--color-text-secondary)}
+.prow .v{color:var(--color-text-primary);font-weight:500}
+.card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;border:0.5px solid var(--color-border-tertiary)}
+.card h4{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.fund-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.fund-row:last-child{border-bottom:none}
+.xpos{color:var(--color-text-success);font-weight:500}
+.xneg{color:var(--color-text-danger);font-weight:500}
+#parse-prog{display:none;font-size:12px;color:var(--color-text-secondary);text-align:center;padding:6px;font-style:italic}
+</style>
+
+<div id="app">
+
+<div id="screen-welcome" class="screen active">
+  <div class="s-head"><h2>Smart money advisor</h2><span class="step-ind">Free · AI-powered</span></div>
+  <div class="s-body" style="justify-content:center;align-items:center;text-align:center;gap:16px;padding:24px">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;margin:0 auto">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-info)" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </div>
+    <div>
+      <div style="font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Your personal finance advisor</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;max-width:320px;margin:0 auto">Get personalized advice on investments, insurance, loans, and financial goals — tailored to your exact situation.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary)"><div style="width:6px;height:6px;border-radius:50%;background:var(--color-text-success)"></div>Works for salaried, business, professionals, students</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary)"><div style="width:6px;height:6px;border-radius:50%;background:var(--color-text-success)"></div>Upload your CAS for fund-level analysis</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary)"><div style="width:6px;height:6px;border-radius:50%;background:var(--color-text-success)"></div>Your data stays private in your session only</div>
+    </div>
+  </div>
+  <div class="s-foot"><button class="btn-primary" onclick="goTo('screen-type')">Get started</button></div>
+</div>
+
+<div id="screen-type" class="screen">
+  <div class="s-head"><h2>What best describes you?</h2><span class="step-ind">Step 1 of 4</span></div>
+  <div class="s-body">
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">This helps tailor questions and advice to your specific financial situation.</div>
+    <div class="profile-grid">
+      <div class="profile-card" onclick="selectType('salaried')" id="type-salaried"><div class="icon">💼</div><div class="label">Salaried</div><div class="sub">Fixed monthly income</div></div>
+      <div class="profile-card" onclick="selectType('business')" id="type-business"><div class="icon">🏪</div><div class="label">Business owner</div><div class="sub">Self-run business</div></div>
+      <div class="profile-card" onclick="selectType('professional')" id="type-professional"><div class="icon">🩺</div><div class="label">Professional</div><div class="sub">Doctor, lawyer, CA</div></div>
+      <div class="profile-card" onclick="selectType('freelancer')" id="type-freelancer"><div class="icon">💻</div><div class="label">Freelancer</div><div class="sub">Variable income</div></div>
+      <div class="profile-card" onclick="selectType('homemaker')" id="type-homemaker"><div class="icon">🏠</div><div class="label">Homemaker</div><div class="sub">Managing household</div></div>
+      <div class="profile-card" onclick="selectType('student')" id="type-student"><div class="icon">🎓</div><div class="label">Student</div><div class="sub">In education</div></div>
+      <div class="profile-card" onclick="selectType('retired')" id="type-retired"><div class="icon">🌅</div><div class="label">Retired</div><div class="sub">Post-employment</div></div>
+      <div class="profile-card" onclick="selectType('other')" id="type-other"><div class="icon">👤</div><div class="label">Other</div><div class="sub">Something else</div></div>
+    </div>
+  </div>
+  <div class="s-foot">
+    <button class="btn-secondary" onclick="goTo('screen-welcome')">Back</button>
+    <button class="btn-primary" id="btn-type-next" disabled onclick="goTo('screen-profile')">Next</button>
+  </div>
+</div>
+
+<div id="screen-profile" class="screen">
+  <div class="s-head"><h2 id="profile-title">About you</h2><span class="step-ind">Step 2 of 4</span></div>
+  <div class="s-body" id="profile-fields"></div>
+  <div class="s-foot">
+    <button class="btn-secondary" onclick="goTo('screen-type')">Back</button>
+    <button class="btn-primary" onclick="goTo('screen-investments')">Next</button>
+  </div>
+</div>
+
+<div id="screen-investments" class="screen">
+  <div class="s-head"><h2>Your investments</h2><span class="step-ind">Step 3 of 4</span></div>
+  <div class="s-body">
+    <div class="section-title">Do you have mutual funds?</div>
+    <div style="display:flex;gap:8px">
+      <div id="mf-yes" class="profile-card" style="flex:1;padding:10px" onclick="selectMF(true)"><div class="label">Yes, I have MFs</div></div>
+      <div id="mf-no" class="profile-card" style="flex:1;padding:10px" onclick="selectMF(false)"><div class="label">No MFs yet</div></div>
+    </div>
+    <div id="cas-section" style="display:none;flex-direction:column;gap:10px">
+      <div class="section-title" style="margin-top:4px">Upload your CAS for detailed analysis</div>
+      <div class="alert info">Your CAS (Consolidated Account Statement) shows all your mutual fund holdings in one place.</div>
+      <div class="card">
+        <h4>How to get your CAS</h4>
+        <div class="cas-step"><div class="num">1</div><div class="txt">Go to <span>camsonline.com</span> or <span>kfintech.com</span></div></div>
+        <div class="cas-step"><div class="num">2</div><div class="txt">Click <span>Investor Services → Consolidated Account Statement</span></div></div>
+        <div class="cas-step"><div class="num">3</div><div class="txt">Enter your PAN and registered email. Choose <span>Detailed</span> statement.</div></div>
+        <div class="cas-step"><div class="num">4</div><div class="txt">Download the PDF and upload it below.</div></div>
+      </div>
+      <div class="cas-zone" onclick="document.getElementById('cas-file').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+        <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Drop CAS PDF here or click to upload</div>
+        <div style="font-size:11px;color:var(--color-text-secondary)" id="cas-file-name">PDF or text file · password-protected supported</div>
+        <input type="file" id="cas-file" accept=".pdf,.txt" style="display:none" onchange="casFileSelected(event)">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></div><span style="font-size:11px;color:var(--color-text-tertiary)">or paste text</span><div style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></div></div>
+      <textarea id="cas-paste" placeholder="Paste your CAS text here..." style="width:100%;height:90px;padding:9px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);resize:vertical;font-family:var(--font-sans);line-height:1.5"></textarea>
+      <div class="skip-link" onclick="skipCAS()">Skip for now — I'll upload CAS later</div>
+    </div>
+    <div id="no-mf-section" style="display:none">
+      <div class="alert success" style="margin-top:4px">No problem — the advisor will help you figure out where to start investing based on your profile.</div>
+    </div>
+    <div style="margin-top:4px" class="section-title">Other investments (optional)</div>
+    <div class="field-row">
+      <div class="field-group"><label>Stocks value (₹)</label><input type="number" id="inv-stocks" placeholder="0"></div>
+      <div class="field-group"><label>FD / RD (₹)</label><input type="number" id="inv-fd" placeholder="0"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label>PPF / NPS (₹)</label><input type="number" id="inv-ppf" placeholder="0"></div>
+      <div class="field-group"><label>Gold / other (₹)</label><input type="number" id="inv-gold" placeholder="0"></div>
+    </div>
+  </div>
+  <div class="s-foot">
+    <button class="btn-secondary" onclick="goTo('screen-profile')">Back</button>
+    <button class="btn-primary" id="btn-inv-next" onclick="goToGoals()">Next</button>
+  </div>
+</div>
+
+<div id="screen-goals" class="screen">
+  <div class="s-head"><h2>Your goals</h2><span class="step-ind">Step 4 of 4</span></div>
+  <div class="s-body">
+    <div style="font-size:13px;color:var(--color-text-secondary)">Select goals you are planning for. Skip any that don't apply.</div>
+    <div style="display:flex;flex-direction:column;gap:8px" id="goals-list">
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-retirement" onclick="toggleGoal('retirement')">
+        <div style="flex:1"><div class="label">Retirement</div><div class="sub">Building a corpus for post-work life</div></div>
+      </div>
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-education" onclick="toggleGoal('education')">
+        <div style="flex:1"><div class="label">Children's education</div><div class="sub">School, college, higher studies</div></div>
+      </div>
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-house" onclick="toggleGoal('house')">
+        <div style="flex:1"><div class="label">Buy or upgrade home</div><div class="sub">First purchase or larger home</div></div>
+      </div>
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-emergency" onclick="toggleGoal('emergency')">
+        <div style="flex:1"><div class="label">Emergency fund</div><div class="sub">3–12 months of expenses as safety net</div></div>
+      </div>
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-marriage" onclick="toggleGoal('marriage')">
+        <div style="flex:1"><div class="label">Marriage</div><div class="sub">Self or children's wedding expenses</div></div>
+      </div>
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-vehicle" onclick="toggleGoal('vehicle')">
+        <div style="flex:1"><div class="label">Vehicle purchase</div><div class="sub">Car or bike in next few years</div></div>
+      </div>
+      <div class="profile-card" style="text-align:left;padding:10px 12px;display:flex;align-items:center;gap:10px" id="goal-travel" onclick="toggleGoal('travel')">
+        <div style="flex:1"><div class="label">Travel / experience</div><div class="sub">Planned big trips or sabbatical</div></div>
+      </div>
+      <div class="field-group" style="margin-top:4px"><label>Any other goal</label><input type="text" id="goal-other-txt" placeholder="e.g. start a business, pay off loan early..."></div>
+    </div>
+  </div>
+  <div class="s-foot">
+    <button class="btn-secondary" onclick="goTo('screen-investments')">Back</button>
+    <button class="btn-primary" onclick="buildProfile()">Build my plan</button>
+  </div>
+</div>
+
+<div id="screen-loading" class="screen">
+  <div class="s-body" style="justify-content:center;align-items:center;text-align:center;gap:16px">
+    <div id="load-spinner" style="width:40px;height:40px;border:2.5px solid var(--color-border-tertiary);border-top-color:var(--color-text-primary);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto"></div>
+    <div>
+      <div style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px" id="load-msg">Analysing your profile...</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)" id="load-sub">This takes 15–20 seconds</div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-advisor" class="screen" style="flex-direction:column">
+  <div class="s-head">
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-info)" id="avatar-initials">?</div>
+    <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--color-text-primary)" id="adv-name">Finance advisor</div><div style="font-size:11px;color:var(--color-text-secondary)" id="adv-sub">Profile loaded</div></div>
+    <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--color-background-success);color:var(--color-text-success)" id="adv-badge">Ready</span>
+  </div>
+  <div id="tabs">
+    <div class="tab active" onclick="switchTab('chat')">Advisor chat</div>
+    <div class="tab" onclick="switchTab('cas-tab')">Load CAS</div>
+    <div class="tab" onclick="switchTab('profile-tab')">My profile</div>
+    <div class="tab" onclick="switchTab('actions-tab')">Action list</div>
+  </div>
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    <div id="tab-chat" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;flex:1;overflow:hidden">
+        <div id="msgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px"></div>
+        <div id="sidebar">
+          <div class="qlbl">Quick questions</div>
+          <button class="qbtn" onclick="ask('What is my single most urgent financial action right now?')">Top priority action</button>
+          <button class="qbtn" onclick="ask('Is my insurance adequate? What cover do I need?')">Insurance check</button>
+          <button class="qbtn" onclick="ask('How much emergency fund do I need and do I have enough?')">Emergency fund</button>
+          <button class="qbtn" onclick="ask('What should my monthly investment amount be and where should I invest it?')">Where to invest</button>
+          <button class="qbtn" onclick="ask('Am I on track for my retirement goal?')">Retirement check</button>
+          <button class="qbtn" onclick="ask('Should I prepay my loan or invest the surplus?')">Loan vs invest</button>
+          <button class="qbtn" onclick="ask('Review my mutual funds and tell me what to exit and what to keep')">Fund review</button>
+          <button class="qbtn" onclick="ask('Give me a complete financial health score and what needs fixing')">Full health check</button>
+        </div>
+      </div>
+      <div id="inp-area">
+        <textarea id="usr-inp" placeholder="Ask anything about your finances..." onkeydown="handleKey(event)"></textarea>
+        <button id="send-btn" onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+    <div id="tab-cas-tab" style="display:none;flex:1;overflow-y:auto">
+      <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div class="card"><h4>What is a CAS?</h4><p style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Your Consolidated Account Statement lists all mutual fund holdings across all AMCs. Download from <strong>camsonline.com</strong> or <strong>kfintech.com</strong> → Investor Services → CAS → Detailed.</p></div>
+        <div class="cas-zone" onclick="document.getElementById('cas-file2').click()">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px">Drop CAS PDF or click to upload</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)" id="cas2-name">PDF or text · password-protected supported</div>
+          <input type="file" id="cas-file2" accept=".pdf,.txt" style="display:none" onchange="casFile2Selected(event)">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></div><span style="font-size:11px;color:var(--color-text-tertiary)">or paste text</span><div style="flex:1;height:0.5px;background:var(--color-border-tertiary)"></div></div>
+        <textarea id="cas-paste2" placeholder="Paste CAS text here..." style="width:100%;height:100px;padding:9px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);resize:vertical;font-family:var(--font-sans);line-height:1.5"></textarea>
+        <button onclick="parseCAS()" style="width:100%;padding:9px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-text-primary);color:var(--color-background-primary);border:none" id="parse-btn2">Analyse CAS with AI</button>
+        <div id="parse-prog" style="display:none;font-size:12px;color:var(--color-text-secondary);text-align:center;padding:6px;font-style:italic">Parsing your CAS — takes 15–20 seconds...</div>
+        <div id="cas-results" style="display:none;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+    <div id="tab-profile-tab" style="display:none;flex:1;overflow-y:auto">
+      <div style="padding:14px;display:flex;flex-direction:column;gap:10px" id="profile-display"></div>
+    </div>
+    <div id="tab-actions-tab" style="display:none;flex:1;overflow-y:auto">
+      <div style="padding:14px;display:flex;flex-direction:column;gap:8px" id="actions-display"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
+<script>
+let userProfile={type:'',data:{},hasMF:null,cas:'',casLoaded:false,goals:[],investments:{}};
+let chatHistory=[];
+let systemPrompt='';
+let casPdfBase64=null;
+let casPdfBase642=null;
+
+const profileFields={
+  salaried:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 32',half:true},
+    {id:'marital',label:'Marital status',type:'select',options:['Single','Married'],half:true},
+    {id:'dependents',label:'No. of dependents (spouse, kids, parents)',type:'number',placeholder:'e.g. 3',half:true},
+    {id:'income',label:'Monthly take-home salary (₹)',type:'number',placeholder:'e.g. 85000',half:true},
+    {id:'bonus',label:'Annual bonus (₹, rough estimate)',type:'number',placeholder:'e.g. 100000',half:true},
+    {id:'stability',label:'Job stability',type:'select',options:['Very stable (MNC/govt)','Moderate','Uncertain/startup'],half:true},
+    {id:'rent',label:'Monthly rent or home EMI (₹)',type:'number',placeholder:'e.g. 25000',half:true},
+    {id:'expenses',label:'Total monthly expenses (₹)',type:'number',placeholder:'e.g. 60000',half:true},
+    {id:'loans',label:'Any loans? (describe briefly)',type:'text',placeholder:'e.g. Home loan ₹40L at 8.5%, 10yr remaining'},
+    {id:'insurance',label:'Insurance held',type:'text',placeholder:'e.g. Term ₹1Cr, health floater ₹5L from employer'},
+    {id:'emergency',label:'Emergency fund available (₹)',type:'number',placeholder:'e.g. 150000',half:true},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  business:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 38',half:true},
+    {id:'marital',label:'Marital status',type:'select',options:['Single','Married'],half:true},
+    {id:'dependents',label:'No. of dependents',type:'number',placeholder:'e.g. 2',half:true},
+    {id:'biz_type',label:'Type of business',type:'text',placeholder:'e.g. retail shop, manufacturing, services',half:true},
+    {id:'income_avg',label:'Average monthly income drawn (₹)',type:'number',placeholder:'e.g. 150000'},
+    {id:'income_range',label:'Income range (min–max monthly)',type:'text',placeholder:'e.g. ₹80K in slow months, ₹2L in good months'},
+    {id:'expenses',label:'Personal monthly expenses (₹)',type:'number',placeholder:'e.g. 70000',half:true},
+    {id:'biz_expenses',label:'Business fixed costs/month (₹)',type:'number',placeholder:'e.g. 200000',half:true},
+    {id:'loans',label:'Loans (personal + business)',type:'text',placeholder:'e.g. Business loan ₹20L, home loan ₹35L'},
+    {id:'insurance',label:'Insurance held',type:'text',placeholder:'e.g. Term ₹50L, no health policy'},
+    {id:'emergency',label:'Emergency / buffer fund (₹)',type:'number',placeholder:'e.g. 300000',half:true},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  professional:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 36',half:true},
+    {id:'profession',label:'Profession',type:'select',options:['Doctor','Lawyer','CA/CS','Architect','Consultant','Other'],half:true},
+    {id:'dependents',label:'No. of dependents',type:'number',placeholder:'e.g. 3',half:true},
+    {id:'practice',label:'Practice type',type:'select',options:['Own practice','Employed','Both'],half:true},
+    {id:'income',label:'Average monthly income (₹)',type:'number',placeholder:'e.g. 300000'},
+    {id:'expenses',label:'Monthly personal expenses (₹)',type:'number',placeholder:'e.g. 100000',half:true},
+    {id:'practice_cost',label:'Monthly practice costs (₹)',type:'number',placeholder:'e.g. 50000',half:true},
+    {id:'loans',label:'Loans outstanding',type:'text',placeholder:'e.g. Education loan ₹15L, clinic loan ₹30L'},
+    {id:'insurance',label:'Insurance held',type:'text',placeholder:'e.g. Term ₹75L, professional indemnity policy'},
+    {id:'emergency',label:'Emergency fund (₹)',type:'number',placeholder:'e.g. 500000',half:true},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  freelancer:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 29',half:true},
+    {id:'marital',label:'Marital status',type:'select',options:['Single','Married'],half:true},
+    {id:'dependents',label:'No. of dependents',type:'number',placeholder:'e.g. 1',half:true},
+    {id:'field',label:'Field of work',type:'text',placeholder:'e.g. design, development, writing, consulting',half:true},
+    {id:'income_avg',label:'Average monthly earnings (₹)',type:'number',placeholder:'e.g. 80000'},
+    {id:'income_range',label:'Income range (best vs worst months)',type:'text',placeholder:'e.g. ₹30K–₹1.5L'},
+    {id:'expenses',label:'Monthly fixed expenses (₹)',type:'number',placeholder:'e.g. 40000',half:true},
+    {id:'loans',label:'Any loans?',type:'text',placeholder:'e.g. none / education loan ₹5L',half:true},
+    {id:'insurance',label:'Insurance held',type:'text',placeholder:'e.g. no insurance yet'},
+    {id:'emergency',label:'Emergency fund (₹)',type:'number',placeholder:'e.g. 100000',half:true},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  homemaker:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 34',half:true},
+    {id:'dependents',label:'No. of dependents you manage for',type:'number',placeholder:'e.g. 3',half:true},
+    {id:'spouse_income',label:'Spouse monthly income (₹)',type:'number',placeholder:'e.g. 120000'},
+    {id:'household_budget',label:'Monthly household budget you manage (₹)',type:'number',placeholder:'e.g. 60000',half:true},
+    {id:'personal_savings',label:'Your personal savings/month (₹)',type:'number',placeholder:'e.g. 5000',half:true},
+    {id:'insurance',label:'Insurance (yours + family)',type:'text',placeholder:'e.g. husband has term ₹1Cr, family floater ₹5L'},
+    {id:'emergency',label:'Emergency fund accessible to you (₹)',type:'number',placeholder:'e.g. 50000',half:true},
+    {id:'goals_focus',label:'Main financial concern',type:'text',placeholder:'e.g. children education, family security, starting to invest'},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  student:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 21',half:true},
+    {id:'course',label:'Course / stage',type:'text',placeholder:'e.g. B.Tech 3rd year, MBA 1st year',half:true},
+    {id:'income',label:'Monthly income / stipend / pocket money (₹)',type:'number',placeholder:'e.g. 15000'},
+    {id:'expenses',label:'Monthly expenses (₹)',type:'number',placeholder:'e.g. 12000',half:true},
+    {id:'savings',label:'Current savings (₹)',type:'number',placeholder:'e.g. 20000',half:true},
+    {id:'loans',label:'Education loan outstanding (₹)',type:'number',placeholder:'e.g. 500000',half:true},
+    {id:'graduation',label:'Expected graduation year',type:'number',placeholder:'e.g. 2026',half:true},
+    {id:'goal_income',label:'Expected first salary after graduation (₹/month)',type:'number',placeholder:'e.g. 50000'},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  retired:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 62',half:true},
+    {id:'dependents',label:'No. of dependents',type:'number',placeholder:'e.g. 1',half:true},
+    {id:'corpus',label:'Total retirement corpus (₹)',type:'number',placeholder:'e.g. 8000000'},
+    {id:'pension',label:'Monthly pension / annuity (₹)',type:'number',placeholder:'e.g. 25000',half:true},
+    {id:'expenses',label:'Monthly expenses (₹)',type:'number',placeholder:'e.g. 50000',half:true},
+    {id:'insurance',label:'Health insurance',type:'text',placeholder:'e.g. Senior citizen floater ₹10L'},
+    {id:'loans',label:'Any loans remaining?',type:'text',placeholder:'e.g. none / home loan ₹10L',half:true},
+    {id:'life_expectancy',label:'Planning horizon (years)',type:'number',placeholder:'e.g. 25',half:true},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ],
+  other:[
+    {id:'age',label:'Age',type:'number',placeholder:'e.g. 30',half:true},
+    {id:'marital',label:'Marital status',type:'select',options:['Single','Married'],half:true},
+    {id:'income',label:'Monthly income (₹)',type:'number',placeholder:'e.g. 50000',half:true},
+    {id:'expenses',label:'Monthly expenses (₹)',type:'number',placeholder:'e.g. 35000',half:true},
+    {id:'dependents',label:'No. of dependents',type:'number',placeholder:'e.g. 0',half:true},
+    {id:'loans',label:'Loans outstanding',type:'text',placeholder:'e.g. none',half:true},
+    {id:'insurance',label:'Insurance held',type:'text',placeholder:'e.g. term ₹50L, no health'},
+    {id:'emergency',label:'Emergency fund (₹)',type:'number',placeholder:'e.g. 100000',half:true},
+    {id:'risk',label:'Risk appetite',type:'select',options:['Conservative','Moderate','Aggressive'],half:true},
+  ]
+};
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function selectType(t){
+  userProfile.type=t;
+  document.querySelectorAll('.profile-card[id^="type-"]').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('type-'+t).classList.add('selected');
+  document.getElementById('btn-type-next').disabled=false;
+  const titles={salaried:'About you — salaried',business:'About your business',professional:'About your practice',freelancer:'About your freelance work',homemaker:'About your household',student:'About your studies',retired:'About your retirement',other:'About you'};
+  document.getElementById('profile-title').textContent=titles[t]||'About you';
+  renderProfileFields(t);
+}
+
+function renderProfileFields(t){
+  const fields=profileFields[t]||profileFields.other;
+  const container=document.getElementById('profile-fields');
+  let html='<div style="display:flex;flex-direction:column;gap:10px">';
+  let i=0;
+  while(i<fields.length){
+    const f=fields[i];
+    if(f.half&&i+1<fields.length&&fields[i+1].half){
+      html+=`<div class="field-row">${fieldHTML(f)}${fieldHTML(fields[i+1])}</div>`;i+=2;
+    } else {
+      html+=`<div class="field-group">${fieldHTML(f,true)}</div>`;i++;
+    }
+  }
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function fieldHTML(f,full){
+  const wrap=full?'':'<div class="field-group">';
+  const wrapEnd=full?'':'</div>';
+  let inp='';
+  if(f.type==='select'){
+    inp=`<select id="pf-${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`;
+  } else {
+    inp=`<input type="${f.type||'text'}" id="pf-${f.id}" placeholder="${f.placeholder||''}">`;
+  }
+  return `${wrap}<label>${f.label}</label>${inp}${wrapEnd}`;
+}
+
+function selectMF(val){
+  userProfile.hasMF=val;
+  document.getElementById('mf-yes').classList.toggle('selected',val);
+  document.getElementById('mf-no').classList.toggle('selected',!val);
+  document.getElementById('cas-section').style.display=val?'flex':'none';
+  document.getElementById('no-mf-section').style.display=val?'none':'block';
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f)processCasFile(f,'cas-file-name',1);
+}
+
+function casFileSelected(e){const f=e.target.files[0];if(f)processCasFile(f,'cas-file-name',1)}
+function casFile2Selected(e){const f=e.target.files[0];if(f)processCasFile(f,'cas2-name',2)}
+
+function processCasFile(file,nameEl,slot){
+  document.getElementById(nameEl).textContent='Loaded: '+file.name;
+  const r=new FileReader();
+  if(file.type==='application/pdf'){
+    r.onload=ev=>{
+      const b64=ev.target.result.split(',')[1];
+      if(slot===1)casPdfBase64=b64; else casPdfBase642=b64;
+    };
+    r.readAsDataURL(file);
+  } else {
+    r.onload=ev=>{
+      if(slot===1)document.getElementById('cas-paste').value=ev.target.result;
+      else document.getElementById('cas-paste2').value=ev.target.result;
+    };
+    r.readAsText(file);
+  }
+}
+
+function skipCAS(){userProfile.cas='skipped';goTo('screen-goals')}
+
+function goToGoals(){
+  const fields=profileFields[userProfile.type]||profileFields.other;
+  const data={};
+  fields.forEach(f=>{
+    const el=document.getElementById('pf-'+f.id);
+    if(el)data[f.id]=el.value;
+  });
+  userProfile.data=data;
+  userProfile.investments={stocks:document.getElementById('inv-stocks').value||0,fd:document.getElementById('inv-fd').value||0,ppf:document.getElementById('inv-ppf').value||0,gold:document.getElementById('inv-gold').value||0};
+  userProfile.cas=document.getElementById('cas-paste').value||'';
+  if(casPdfBase64)userProfile.casPdf=casPdfBase64;
+  goTo('screen-goals');
+}
+
+function toggleGoal(g){
+  const el=document.getElementById('goal-'+g);
+  if(userProfile.goals.includes(g)){userProfile.goals=userProfile.goals.filter(x=>x!==g);el.classList.remove('selected')}
+  else{userProfile.goals.push(g);el.classList.add('selected')}
+}
+
+async function buildProfile(){
+  const otherGoal=document.getElementById('goal-other-txt').value;
+  if(otherGoal)userProfile.goals.push(otherGoal);
+  goTo('screen-loading');
+  document.getElementById('load-msg').textContent='Building your financial profile...';
+
+  const typeLabel={salaried:'salaried professional',business:'business owner',professional:'self-employed professional',freelancer:'freelancer',homemaker:'homemaker',student:'student',retired:'retired person',other:'individual'}[userProfile.type]||'individual';
+
+  const profileStr=Object.entries(userProfile.data).map(([k,v])=>`${k}: ${v}`).join(', ');
+  const invStr=`Stocks: ₹${Number(userProfile.investments.stocks||0).toLocaleString('en-IN')}, FD/RD: ₹${Number(userProfile.investments.fd||0).toLocaleString('en-IN')}, PPF/NPS: ₹${Number(userProfile.investments.ppf||0).toLocaleString('en-IN')}, Gold/other: ₹${Number(userProfile.investments.gold||0).toLocaleString('en-IN')}`;
+
+  let casInsights='No CAS uploaded yet.';
+  if(userProfile.casPdf||userProfile.cas){
+    document.getElementById('load-msg').textContent='Parsing your CAS data...';
+    casInsights=await extractCASInsights();
+  }
+
+  document.getElementById('load-msg').textContent='Building your personalised plan...';
+
+  systemPrompt=`You are a personal financial advisor AI. The user is a ${typeLabel} in India. Here is their complete financial profile:
+
+PROFILE TYPE: ${typeLabel}
+PROFILE DATA: ${profileStr}
+HAS MUTUAL FUNDS: ${userProfile.hasMF?'Yes':'No'}
+OTHER INVESTMENTS: ${invStr}
+GOALS: ${userProfile.goals.join(', ')||'Not specified'}
+CAS / MUTUAL FUND DATA: ${casInsights}
+
+YOUR ADVISOR RULES:
+- Give personalised advice using their actual numbers — never generic advice
+- Always prioritise: (1) insurance adequacy (2) emergency fund (3) debt management (4) investing
+- For salaried: focus on EPF optimisation, tax saving, SIP discipline
+- For business owners: focus on separating business/personal money, irregular income planning, working capital buffer
+- For professionals: focus on late start catch-up, high income optimisation, professional insurance
+- For freelancers: bigger emergency fund (9–12 months), income smoothing, no EPF so NPS/PPF important
+- For homemakers: household budget optimisation, encouraging personal financial independence
+- For students: building first habits, education loan management, starting small SIPs early
+- For retired: corpus drawdown strategy, healthcare costs, not outliving money
+- Reference specific numbers from their profile in every answer
+- Keep responses focused: 3–5 short paragraphs max
+- Never recommend panic selling during market dips
+- For anyone with no mutual funds, recommend starting with: 1 index fund + 1 liquid fund as first step`;
+
+  const age=userProfile.data.age||'unknown';
+  const name=userProfile.type.charAt(0).toUpperCase()+userProfile.type.slice(1);
+  document.getElementById('avatar-initials').textContent=name.charAt(0).toUpperCase();
+  document.getElementById('adv-name').textContent='Finance advisor';
+  document.getElementById('adv-sub').textContent=`${typeLabel} · Age ${age}`;
+
+  const firstMsg=await getFirstMessage();
+  goTo('screen-advisor');
+  switchTab('chat');
+  addMsg('ai',firstMsg);
+  chatHistory.push({role:'assistant',content:firstMsg});
+  renderProfileTab();
+  renderActionsTab();
+}
+
+async function extractCASInsights(){
+  try{
+    let msgContent;
+    if(userProfile.casPdf){
+      msgContent=[
+        {type:'document',source:{type:'base64',media_type:'application/pdf',data:userProfile.casPdf}},
+        {type:'text',text:'Extract all mutual fund holdings from this CAS. Return JSON only: {"funds":[{"name":"...","value":0,"xirr":null,"plan":"direct/regular","category":"equity/debt/liquid/elss"}],"totalValue":0,"totalEquity":0,"totalDebt":0,"regularPlans":[],"negativeXIRR":[],"summary":"2-3 sentences"}'}
+      ];
+    } else {
+      msgContent='From this CAS text, extract all mutual fund holdings. Return JSON only: {"funds":[{"name":"...","value":0,"xirr":null,"plan":"direct/regular","category":"equity/debt/liquid/elss"}],"totalValue":0,"totalEquity":0,"totalDebt":0,"regularPlans":[],"negativeXIRR":[],"summary":"2-3 sentences"}\n\nCAS TEXT:\n'+userProfile.cas;
+    }
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:msgContent}]})});
+    const d=await r.json();
+    const raw=d.content?.[0]?.text||'{}';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    userProfile.casData=parsed;
+    return `Total MF corpus: ₹${(parsed.totalValue||0).toLocaleString('en-IN')}. Equity: ₹${(parsed.totalEquity||0).toLocaleString('en-IN')}. Debt: ₹${(parsed.totalDebt||0).toLocaleString('en-IN')}. Regular plans still held: ${(parsed.regularPlans||[]).join(', ')||'none'}. Negative XIRR funds: ${(parsed.negativeXIRR||[]).join(', ')||'none'}. Funds: ${(parsed.funds||[]).map(f=>`${f.name} (${f.plan}, ${f.category}, ₹${(f.value||0).toLocaleString('en-IN')}${f.xirr!=null?', XIRR '+f.xirr+'%':''})`).join('; ')}. ${parsed.summary||''}`;
+  }catch(e){return 'CAS uploaded but could not be parsed — ask user to paste as text.';}
+}
+
+async function getFirstMessage(){
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:systemPrompt,messages:[{role:'user',content:'Give me a brief welcome message (2–3 sentences max) acknowledging my profile type and financial situation, and tell me the single most important thing I should focus on right now. Be specific to my numbers.'}]})});
+    const d=await r.json();
+    return d.content?.[0]?.text||'Welcome! Your profile is loaded. Ask me anything about your finances.';
+  }catch(e){return 'Your profile is loaded. Ask me anything about your finances.';}
+}
+
+function renderProfileTab(){
+  const d=document.getElementById('profile-display');
+  const data=userProfile.data;
+  const inv=userProfile.investments;
+  let html=`<div class="card"><h4>${userProfile.type} profile</h4>`;
+  Object.entries(data).forEach(([k,v])=>{if(v)html+=`<div class="prow"><span class="k">${k.replace(/_/g,' ')}</span><span class="v">${v}</span></div>`});
+  html+='</div>';
+  const totalInv=Object.values(inv).reduce((a,b)=>a+Number(b||0),0);
+  if(totalInv>0){
+    html+=`<div class="card"><h4>Other investments</h4>`;
+    if(inv.stocks>0)html+=`<div class="prow"><span class="k">Stocks</span><span class="v">₹${Number(inv.stocks).toLocaleString('en-IN')}</span></div>`;
+    if(inv.fd>0)html+=`<div class="prow"><span class="k">FD / RD</span><span class="v">₹${Number(inv.fd).toLocaleString('en-IN')}</span></div>`;
+    if(inv.ppf>0)html+=`<div class="prow"><span class="k">PPF / NPS</span><span class="v">₹${Number(inv.ppf).toLocaleString('en-IN')}</span></div>`;
+    if(inv.gold>0)html+=`<div class="prow"><span class="k">Gold / other</span><span class="v">₹${Number(inv.gold).toLocaleString('en-IN')}</span></div>`;
+    html+='</div>';
+  }
+  if(userProfile.goals.length>0){
+    html+=`<div class="card"><h4>Goals</h4>${userProfile.goals.map(g=>`<div class="prow"><span class="k">${g}</span><span class="v">Active</span></div>`).join('')}</div>`;
+  }
+  if(userProfile.casData&&userProfile.casData.funds){
+    const funds=userProfile.casData.funds;
+    html+=`<div class="card"><h4>Mutual funds (from CAS)</h4>`;
+    funds.forEach(f=>{
+      const xc=f.xirr!=null?(f.xirr>=10?'xpos':'xneg'):'';
+      html+=`<div class="fund-row"><span style="flex:1;color:var(--color-text-primary)">${f.name}${f.plan==='regular'?' <span style="font-size:10px;background:var(--color-background-warning);color:var(--color-text-warning);padding:1px 5px;border-radius:8px">reg</span>':''}</span><span class="${xc}">${f.xirr!=null?f.xirr+'%':'—'}</span></div>`;
+    });
+    html+='</div>';
+  }
+  d.innerHTML=html;
+}
+
+function renderActionsTab(){
+  const d=document.getElementById('actions-display');
+  d.innerHTML='<div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;font-style:italic">Action list updates as you chat with the advisor. Ask for a full health check to populate this.</div>';
+  ask('Give me a prioritised action list of the top 5 things I should do right now, in order of urgency. Format each as: [Priority level] — Action — Why it matters.');
+  switchTab('chat');
+}
+
+async function parseCAS(){
+  const txt=document.getElementById('cas-paste2').value.trim();
+  const btn=document.getElementById('parse-btn2');
+  const prog=document.getElementById('parse-prog');
+  const results=document.getElementById('cas-results');
+  if(!txt&&!casPdfBase642){
+    alert('Please upload a file or paste your CAS text first.');return;
+  }
+  btn.disabled=true;prog.style.display='block';results.style.display='none';
+  try{
+    let msgContent;
+    if(casPdfBase642){
+      msgContent=[{type:'document',source:{type:'base64',media_type:'application/pdf',data:casPdfBase642}},{type:'text',text:'Extract all mutual fund holdings. Return JSON only: {"funds":[{"name":"...","value":0,"xirr":null,"plan":"direct/regular","category":"equity/debt/liquid/elss","hasExitLoad":false}],"totalValue":0,"totalEquity":0,"totalDebt":0,"regularPlans":[],"summary":"2-3 sentences"}'}];
+    } else {
+      msgContent='Extract all mutual fund holdings from this CAS text. Return JSON only: {"funds":[{"name":"...","value":0,"xirr":null,"plan":"direct/regular","category":"equity/debt/liquid/elss","hasExitLoad":false}],"totalValue":0,"totalEquity":0,"totalDebt":0,"regularPlans":[],"summary":"2-3 sentences"}\n\nCAS:\n'+txt;
+    }
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:msgContent}]})});
+    const data=await r.json();
+    const raw=data.content?.[0]?.text||'{}';
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(parsed&&parsed.funds){
+      userProfile.casData=parsed;
+      systemPrompt+=`\n\nUPDATED CAS DATA: Total ₹${(parsed.totalValue||0).toLocaleString('en-IN')}. Equity ₹${(parsed.totalEquity||0).toLocaleString('en-IN')}. Debt ₹${(parsed.totalDebt||0).toLocaleString('en-IN')}. Funds: ${parsed.funds.map(f=>`${f.name}(${f.plan},${f.category},₹${(f.value||0).toLocaleString('en-IN')}${f.xirr!=null?',XIRR '+f.xirr+'%':''})`).join('; ')}`;
+      let html=`<div class="card"><h4>${parsed.funds.length} funds detected</h4>`;
+      parsed.funds.forEach(f=>{
+        const xc=f.xirr!=null?(f.xirr>=10?'xpos':'xneg'):'';
+        html+=`<div class="fund-row"><span style="flex:1;color:var(--color-text-primary)">${f.name}${f.plan==='regular'?' <span style="font-size:10px;background:var(--color-background-warning);color:var(--color-text-warning);padding:1px 5px;border-radius:8px">reg</span>':''}</span><span class="${xc}">${f.xirr!=null?f.xirr+'%':'—'}</span></div>`;
+      });
+      html+='</div>';
+      const alerts=[];
+      if((parsed.regularPlans||[]).length>0)alerts.push({t:'warning',m:`${parsed.regularPlans.length} regular plan(s) — switch to direct to save on commissions.`});
+      if(parsed.funds.filter(f=>f.xirr!=null&&f.xirr<0).length>0)alerts.push({t:'danger',m:`${parsed.funds.filter(f=>f.xirr!=null&&f.xirr<0).length} fund(s) with negative XIRR — review for exit.`});
+      if(parsed.funds.length>10)alerts.push({t:'warning',m:`${parsed.funds.length} funds — target is 6–8 for easier management.`});
+      alerts.push({t:'success',m:'CAS loaded. Go to Advisor chat for personalised fund recommendations.'});
+      html+=alerts.map(a=>`<div class="alert ${a.t}" style="margin-top:6px">${a.m}</div>`).join('');
+      html+=`<button onclick="switchTab('chat');ask('I just uploaded my latest CAS. Give me a full portfolio review — what to keep, what to exit, and what changes to make to my SIPs.')" style="width:100%;padding:8px;font-size:12px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);margin-top:8px">Get full CAS analysis in chat ↗</button>`;
+      results.innerHTML=html;
+      results.style.display='flex';
+      results.style.flexDirection='column';
+      renderProfileTab();
+    }
+  }catch(e){results.innerHTML='<div class="alert danger">Could not parse CAS. Try pasting the text directly.</div>';results.style.display='flex'}
+  btn.disabled=false;prog.style.display='none';
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['chat','cas-tab','profile-tab','actions-tab'][i]===t));
+  ['tab-chat','tab-cas-tab','tab-profile-tab','tab-actions-tab'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=id==='tab-'+t?'flex':'none';
+    if(id==='tab-'+t&&id!=='tab-chat')el.style.flexDirection='column';
+  });
+}
+
+function ask(q){document.getElementById('usr-inp').value=q;sendMsg()}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+
+async function sendMsg(){
+  const inp=document.getElementById('usr-inp');
+  const txt=inp.value.trim();
+  if(!txt||!systemPrompt)return;
+  inp.value='';
+  addMsg('user',txt);
+  chatHistory.push({role:'user',content:txt});
+  const lid='l'+Date.now();
+  addMsg('ai','Thinking...',lid,true);
+  document.getElementById('send-btn').disabled=true;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:systemPrompt,messages:chatHistory})});
+    const d=await r.json();
+    const reply=d.content?.[0]?.text||'Sorry, could not get a response.';
+    document.getElementById(lid)?.remove();
+    addMsg('ai',reply);
+    chatHistory.push({role:'assistant',content:reply});
+  }catch(e){document.getElementById(lid)?.remove();addMsg('ai','Connection error. Please try again.')}
+  document.getElementById('send-btn').disabled=false;
+}
+
+function addMsg(role,text,id,loading){
+  const c=document.getElementById('msgs');
+  const d=document.createElement('div');
+  d.className='msg '+role+(loading?' loading':'');
+  if(id)d.id=id;
+  if(role==='ai'&&!loading)d.innerHTML='<div class="lbl">Advisor</div>'+text.replace(/\n/g,'<br>');
+  else d.textContent=text;
+  c.appendChild(d);
+  c.scrollTop=c.scrollHeight;
+}
+</script>
